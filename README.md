@@ -28,7 +28,7 @@ A  simple interview project ride app
 
 
 ## How to use this project
-- Clone the project
+- Clone the project in Android Studio BumbleBee
 - Build and Run the project on a physical device.
 
 ## Contact
