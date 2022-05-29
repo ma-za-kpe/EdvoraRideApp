@@ -16,11 +16,16 @@ A  simple interview project ride app
 - [Jetpack Compose]() - UI framework
 
 ## TODO
+- Filter feature implementation
+- Update category numbers
+- fetch more data from network logic
+- further improve app speed and performance
+- show ui for different states
 - Code clean up
 - Fix a few bugs
 - Tests
-- Optimisations
-- FIlter feature implementation
+- Optimisations 
+
 
 ## How to use this project
 - Clone the project
