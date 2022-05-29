@@ -1,4 +1,5 @@
 ﻿# EdvoraRideApp
+An appetizor link to the app can be found here [App Play](https://appetize.io/app/4d7q1epwq86f4geadfr1hkqrk4?device=pixel4&osVersion=11.0&scale=75)
 
 ## Screenshots
 <img src="docs/main.png"/>
