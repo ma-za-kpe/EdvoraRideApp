@@ -13,25 +13,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maku.edvorarides.ridefeature.RideScreen
 import com.maku.edvorarides.ridefeature.RideViewModel
+import com.maku.edvorarides.ridefeature.RidesEvent
 import com.maku.edvorarides.ui.theme.EdvoraRidesTheme
-import timber.log.Timber
 
 @Composable
-fun RideApp(ridesViewModel: RideViewModel, modifier: Modifier) {
+fun RideApp(modifier: Modifier) {
     val colors = MaterialTheme.colors
     val context = LocalContext.current
-
-    // initialise distance
+    val scaffoldState: ScaffoldState = rememberScaffoldState()
 
     EdvoraRidesTheme {
-        AppContent(ridesViewModel, modifier, colors, context)
+        AppContent(modifier, colors, context, scaffoldState)
     }
 }
 
 @Composable
-fun AppContent(ridesViewModel: RideViewModel, modifier: Modifier, colors: Colors, context: Context) {
+fun AppContent(
+    modifier: Modifier,
+    colors: Colors,
+    context: Context,
+    scaffoldState: ScaffoldState
+) {
 
     Scaffold(
         topBar = {
@@ -58,7 +63,7 @@ fun AppContent(ridesViewModel: RideViewModel, modifier: Modifier, colors: Colors
             )
         },
         content = {
-            RideScreen(ridesViewModel = ridesViewModel, modifier = modifier, colors, context)
+            RideScreen(modifier = modifier, colors = colors, context = context, scaffoldState = scaffoldState)
         }
     )
 

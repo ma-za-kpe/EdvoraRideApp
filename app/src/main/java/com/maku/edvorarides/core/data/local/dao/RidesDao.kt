@@ -8,7 +8,7 @@ import io.reactivex.Flowable
 @Dao
 interface RidesDao {
     @Transaction
-    @Query("SELECT * FROM ride ORDER BY id DESC")
+    @Query("SELECT * FROM ride")
     fun getRides(): Flowable<List<RideResponseItem>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

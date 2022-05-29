@@ -1,6 +1,7 @@
 package com.maku.edvorarides.core.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -14,17 +15,11 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val ridesViewModel: RideViewModel by viewModels()
     private val modifier = Modifier
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            RideApp(ridesViewModel, modifier)
+            RideApp(modifier)
         }
-        initData(ridesViewModel)
-    }
-
-    private fun initData(ridesViewModel: RideViewModel) {
-        ridesViewModel.onEvent(RidesEvent.RequestLatestRidesList)
     }
 }

@@ -255,4 +255,6 @@ fun RideScreenState(
             }
     
             Spacer(modifier = modifier.size(10.dp))
-        }
+}
+
+

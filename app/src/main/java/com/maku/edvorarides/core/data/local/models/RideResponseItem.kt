@@ -1,18 +1,19 @@
 package com.maku.edvorarides.core.data.local.models
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "ride")
 data class RideResponseItem(
-    val city: String,
-    val date: String,
-    val destination_station_code: Int,
+    @ColumnInfo val city: String,
+    @ColumnInfo val date: String,
+    @ColumnInfo val destination_station_code: Int,
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
-    val map_url: String,
-    val origin_station_code: Int,
-    val state: String,
-    val station_path: List<Int>,
-    val distance: Int
+    @ColumnInfo val id: Int,
+    @ColumnInfo val map_url: String,
+    @ColumnInfo val origin_station_code: Int,
+    @ColumnInfo val state: String,
+    @ColumnInfo val station_path: List<Int>,
+    @ColumnInfo val distance: Int
 )

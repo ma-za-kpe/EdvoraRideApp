@@ -4,31 +4,45 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.maku.edvorarides.core.data.local.models.RideResponseItem
 import com.maku.edvorarides.core.presentation.Event
 import com.maku.edvorarides.ui.components.FilterSection
 import com.maku.edvorarides.ui.components.RideScreenState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun RideScreen(ridesViewModel: RideViewModel, modifier: Modifier, colors: Colors, context: Context) {
+fun RideScreen(
+    modifier: Modifier,
+    colors: Colors,
+    context: Context,
+    scaffoldState: ScaffoldState,
+    ridesViewModel: RideViewModel = viewModel(),
+    ) {
+    val scope = rememberCoroutineScope()
     val state = ridesViewModel.state.observeAsState()
+
     Column(modifier = modifier
         .verticalScroll(rememberScrollState())
         .padding(8.dp, 0.dp, 8.dp, 8.dp)) {
-        
-        HandleLoading(state.value?.loading)
-        
+
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -45,13 +59,13 @@ fun RideScreen(ridesViewModel: RideViewModel, modifier: Modifier, colors: Colors
                 )
             }
             items(state.value!!.categories){ item ->
-                HandleFilterItems(item, ridesViewModel, colors, modifier, state.value!!.selectedFilter)
+                HandleFilterItems(item, ridesViewModel, colors, modifier, state.value!!.selectedFilter, scope)
             }
         }
 
+        HandleLoading(state.value?.loading)
         HandleRide(state.value, colors, modifier, context, ridesViewModel)
-
-        HandleFailures(state.value?.failure, context)
+        HandleFailures(state.value?.failure, context, scaffoldState, scope)
     }
 }
 
@@ -62,20 +76,24 @@ fun HandleFilterItems(
     colors: Colors,
     modifier: Modifier,
     selectedFilter: String,
-) {
+    scope: CoroutineScope,
+
+    ) {
     FilterSection(
         setSelected = { name, selected ->
             run {
-                ridesViewModel.setSelectedFilter(
-                    name,
-                    selected
-                )
+                scope.launch {
+                    ridesViewModel.setSelectedFilter(
+                        name,
+                        selected
+                    )
+                }
             }
         },
         selected = selectedFilter == item.name,
         category = item,
         modifier,
-        colors
+        colors,
     ) {
 
     }
@@ -89,32 +107,30 @@ fun HandleRide(
     context: Context,
     ridesViewModel: RideViewModel,
 ) {
-
     // you can use filter here only if you convert date using the threeten library before saving in the room db
     when (state?.selectedFilter) {
         "Upcoming" -> {
-            state.rides.sortedBy { it.distance }.forEach { ride ->
+            state.rides.forEach { ride ->
                 if (convertDate(ride.date).after(Date())){
                     RideScreenState(ride, colors, modifier, context)
                 }
             }
         }
         "Past" -> {
-            state.rides.sortedBy { it.distance }.forEach { ride ->
+            state.rides.forEach { ride ->
                 if (convertDate(ride.date).before(Date())){
                     RideScreenState(ride, colors, modifier, context)
                 }
             }
         }
-        "Past" -> {
+        "Filter" -> {
             Toast.makeText(context, "Feature coming very soon", Toast.LENGTH_SHORT).show()
         }
         else -> {
             // Nearest is our default selected, naturally just sort according to distance
-            state?.rides?.sortedBy { it.distance }?.forEach { ride ->
-                // TODO: find better way to handle filter by nearest (several recompositions... idk)
+            state?.rides?.forEach { ride ->
+                // TODO: find better way to handle filter by nearest (several recompositions, thread safety... idk) , like using coroutine
                 ridesViewModel.updateRide(distance(state.user.station_code, ride.station_path).toString(), ride.id)
-                // TODO: filter list here using the value of state selected in an if else
                 RideScreenState(ride, colors, modifier, context)
             }
         }
@@ -154,7 +170,12 @@ fun HandleLoading(loading: Boolean?) {
 }
 
 @Composable
-fun HandleFailures(failure: Event<Throwable>?, context: Context) {
+fun HandleFailures(
+    failure: Event<Throwable>?,
+    context: Context,
+    scaffoldState: ScaffoldState,
+    scope: CoroutineScope
+) {
     val unhandledFailure = failure?.getContentIfNotHandled() ?: return
 
     val fallbackMessage = "An error : "

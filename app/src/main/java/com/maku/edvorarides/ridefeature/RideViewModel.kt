@@ -46,6 +46,30 @@ class RideViewModel @Inject constructor(
         subscribeToRideDbUpdates()
     }
 
+    private fun subscribeToRideDbUpdates() {
+        getCachedRides()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { onRides(it) },
+                { onFailure(it) }
+            )
+            .addTo(compositeDisposable)
+    }
+
+    private fun onRides(it: List<RideResponseItem>) {
+        // if rides table is empty, trigger the network event
+         _state.value = state.value!!.copy( loading = true)
+        if (it.isNotEmpty()){
+            Log.d("vm", "called onRides not ${it.size}")
+            val list = it.sortedBy { it.distance }
+            _state.value = state.value!!.copy(loading = false, rides = list)
+        } else {
+            Log.d("vm", "called onRides empty ${it.size}")
+            loadRides()
+        }
+    }
+
+
     fun setSelectedFilter(name: String, selected: Boolean){
         _state.value = state.value!!.setSelectedFilter(name, selected)
     }
@@ -59,6 +83,7 @@ class RideViewModel @Inject constructor(
         _state.value = state.value!!.copy(categories = filterItems)
     }
 
+    // trigger this from the ui
     fun onEvent(event: RidesEvent) {
         when(event) {
             is RidesEvent.RequestLatestRidesList ->
@@ -74,6 +99,7 @@ class RideViewModel @Inject constructor(
     }
 
     private fun loadRidesFromNetwork() {
+        Log.d("vm", "called loadRidesFromNetwork ${state.value?.rides?.size}")
         _state.value = state.value!!.copy( loading = true)
         val errorMessage = "Failed to fetch rides: "
         val exceptionHandler = viewModelScope.createExceptionHandler(errorMessage){
@@ -84,16 +110,6 @@ class RideViewModel @Inject constructor(
             getNetworkRides()
             _state.value = state.value!!.copy( loading = false)
         }
-    }
-
-    private fun subscribeToRideDbUpdates() {
-        getCachedRides()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { onRides(it) },
-                { onFailure(it) }
-            )
-            .addTo(compositeDisposable)
     }
 
     private fun onFailure(failure: Throwable) {
@@ -107,10 +123,6 @@ class RideViewModel @Inject constructor(
         }
     }
 
-    private fun onRides(it: List<RideResponseItem>) {
-        _state.value = state.value!!.copy( loading = true)
-        _state.value = state.value!!.copy(loading = false, rides = it)
-    }
 
     override fun onCleared() {
         super.onCleared()

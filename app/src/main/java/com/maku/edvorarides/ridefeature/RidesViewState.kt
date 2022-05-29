@@ -17,6 +17,7 @@ data class RidesViewState(
     // list
     val loading: Boolean = true,
     val rides: List<RideResponseItem> = emptyList(),
+
     // Using Event prevents your app from handling the error more than once.
     val failure: Event<Throwable>? = null
 ) {
